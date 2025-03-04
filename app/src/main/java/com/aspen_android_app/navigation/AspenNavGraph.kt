@@ -15,16 +15,7 @@ fun AspenNavGraph() {
     val navController = rememberNavController()
     NavHost(navController, startDestination = AspenScreen.AspenIntroScreen.route) {
         composable(
-            route = AspenScreenNameConstant.ASPEN_INTRO_SCREEN,
-            enterTransition = {
-                return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(500))
-            },
-            exitTransition = {
-                return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(500))
-            },
-            popEnterTransition = {
-                return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(500))
-            }
+            route = AspenScreenNameConstant.ASPEN_INTRO_SCREEN
         ) {
             AspenIntro(navigateToDashboard = {
                 navController.navigate(AspenScreen.AspenDashBoardScreen.route)
