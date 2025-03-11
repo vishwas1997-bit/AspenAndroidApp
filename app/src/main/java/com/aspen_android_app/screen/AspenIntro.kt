@@ -60,7 +60,7 @@ fun AspenIntro(navigateToDashboard: () -> Unit) {
                     .padding(top = 56.dp)
             )
 
-            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
+            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 72.dp)) {
                 Text(
                     text = "Plan your",
                     fontSize = 24.sp,

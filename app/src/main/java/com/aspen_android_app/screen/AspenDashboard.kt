@@ -14,17 +14,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
@@ -34,8 +36,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aspen_android_app.R
+import com.aspen_android_app.data.Place
 import com.aspen_android_app.ui.theme.MontserratFontFamily
 
 @Composable
@@ -61,16 +62,28 @@ fun AspenDashboard() {
     var selectedIndex by remember { mutableIntStateOf(0) }
     val categories = listOf("Location", "Hotels", "Food", "Adventure", "Activities")
     var selectedCategory by remember { mutableStateOf(categories[0]) }
+    val places = listOf(
+        Place(name = "Alley Palace", imageRes = R.drawable.alley_palace, rating = "4.1"),
+        Place(name = "Coeurdes Alpes", imageRes = R.drawable.coeurdes_alpes, rating = "4.5"),
+        Place(name = "Sunset Valley", imageRes = R.drawable.explore_aspen, rating = "4.3"),
+        Place(name = "Mountain Retreat", imageRes = R.drawable.luxurious_aspen, rating = "4.8")
+    )
 
+    val recommendPlaces = listOf(
+        Place(name = "Explore Aspen", imageRes = R.drawable.explore_aspen, duration = "4N/5D"),
+        Place("Luxurious Aspen", R.drawable.luxurious_aspen, duration = "2N/3d"),
+    )
 
     Scaffold(bottomBar = {
-        AspenDashboardBottomBar(selectedIndex = selectedIndex,
+        AspenDashboardBottomBar(
+            selectedIndex = selectedIndex,
             onItemSelected = { selectedIndex = it })
     }, content = { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 modifier = Modifier
@@ -146,25 +159,36 @@ fun AspenDashboard() {
                         indication = null
                     ) { })
             }
-
-            val places = listOf(
-                Place("Alley Palace", R.drawable.alley_palace, "4.1", false),
-                Place("Coeurdes Alpes", R.drawable.coeurdes_alpes, "4.5", true),
-                Place("Sunset Valley", R.drawable.explore_aspen, "4.3", false),
-                Place("Mountain Retreat", R.drawable.luxurious_aspen, "4.8", true)
-            )
-
             LazyRow(
                 contentPadding = PaddingValues(top = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(28.dp)
             ) {
                 items(places) { place ->
-                    PlaceCard(
-                        place = place,
-                        onFavoriteClick = { /* Handle favorite toggle */ }
+                    PlaceCard(place = place)
+                }
+            }
+
+            Text(
+                text = "Recommended",
+                color = Color.Black,
+                fontSize = 18.sp,
+                modifier = Modifier.padding(top = 32.dp),
+                fontFamily = MontserratFontFamily,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            LazyRow(
+                contentPadding = PaddingValues(top = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(recommendPlaces) { data ->
+                    TravelCard(
+                        imageRes = data.imageRes, title = data.name, duration = "4N/5D"
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(36.dp))
         }
     })
 }
@@ -303,7 +327,9 @@ fun CategoryTabs(
 }
 
 @Composable
-fun PlaceCard(place: Place, onFavoriteClick: () -> Unit) {
+fun PlaceCard(place: Place) {
+    var isFavorite by remember { mutableStateOf(place.isFavorite) }
+
     Card(
         modifier = Modifier
             .width(224.dp)
@@ -331,16 +357,19 @@ fun PlaceCard(place: Place, onFavoriteClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
                     modifier = Modifier
-                        .background(Color(0xFF4D5652), shape = RoundedCornerShape(58.dp))
+                        .background(
+                            Color(0xFF4D5652), shape = RoundedCornerShape(58.dp)
+                        )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .background(Color(0xFF4D5652), shape = RoundedCornerShape(58.dp))
+                    verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                        .background(
+                            Color(0xFF4D5652), shape = RoundedCornerShape(58.dp)
+                        )
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     Icon(
@@ -356,26 +385,86 @@ fun PlaceCard(place: Place, onFavoriteClick: () -> Unit) {
 
             // Favorite Button
             IconButton(
-                onClick = onFavoriteClick,
+                onClick = {
+                    isFavorite = !isFavorite
+                    place.isFavorite = isFavorite
+                },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
                     .background(Color.White, shape = CircleShape)
             ) {
                 Icon(
-                    imageVector = if (place.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = "Favorite",
-                    tint = if (place.isFavorite) Color.Red else Color.Gray
+                    tint = if (isFavorite) Color.Red else Color.Gray
                 )
             }
         }
     }
 }
 
-// Data Model for Place
-data class Place(
-    val name: String,
-    val imageRes: Int,
-    val rating: String,
-    val isFavorite: Boolean,
-)
+@Composable
+fun TravelCard(
+    imageRes: Int,
+    title: String,
+    duration: String,
+) {
+    Card(
+        modifier = Modifier.background(color = Color.White),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .width(280.dp)
+                    .height(200.dp)
+                    .padding(4.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape = RoundedCornerShape(12.dp))
+                )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(y = 20.dp)
+                        .padding(8.dp)
+                        .background(
+                            color = Color(0xFF3A544F), shape = RoundedCornerShape(8.dp)
+                        )
+                        .border(width = 2.dp, color = Color.White, shape = RoundedCornerShape(8.dp))
+                ) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                        text = duration,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+
+            Text(
+                modifier = Modifier.padding(start = 8.dp),
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                modifier = Modifier.padding(start = 8.dp),
+                text = "🔥 Hot Deal",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+    }
+}
